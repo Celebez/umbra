@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Celebez/umbra/actions/workflows/tests.yml/badge.svg)](https://github.com/Celebez/umbra/actions/workflows/tests.yml)
 [![PyPI](https://img.shields.io/badge/PyPI-ready-21e99a?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/umbra/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-FFD166?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/github/license/Celebez/umbra?style=flat-square&color=FFD166)](LICENSE)
 
 > An AI-native stealth browser for agents. Persistent identities, a proxy mesh,
 > and LLM-grounded extraction — over a CDP browser engine.
