@@ -5,10 +5,10 @@ FROM python:3.11-slim AS build
 # Install the Umbra engine (Rust + V8 CDP browser).
 ARG UMBRA_ENGINE_VERSION=latest
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
-    && curl -fsSL "https://github.com/Celebez/umbra/releases/${UMBRA_ENGINE_VERSION}/download/umbra-engine-x86_64-linux.tar.gz" -o /tmp/umbra-engine.tar.gz \
-    && tar xzf /tmp/umbra-engine.tar.gz -C /usr/local/bin \
-    && chmod +x /usr/local/bin/umbra-engine \
-    && rm -f /tmp/umbra-engine.tar.gz \
+    && curl -fsSL "https://github.com/Celebez/umbra/releases/${UMBRA_ENGINE_VERSION}/download/obscura-x86_64-linux.tar.gz" -o /tmp/obscura.tar.gz \
+    && tar xzf /tmp/obscura.tar.gz -C /usr/local/bin \
+    && install -m 0755 /usr/local/bin/obscura /usr/local/bin/umbra-engine \
+    && rm -f /tmp/obscura.tar.gz \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
