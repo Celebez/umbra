@@ -1,9 +1,8 @@
 """Tests for the Umbra engine, identity, proxy, and extraction layers.
 
-Engine tests use the real installed ``obscura`` binary when present, and skip
-gracefully when it is not (mirrors the upstream Hermes plugin test approach of
-using a fake binary where the engine is unavailable). Identity, proxy, and
-extraction tests are pure-Python and always run.
+Engine tests use the real installed ``umbra-engine`` binary when present, and
+skip gracefully when it is not. Identity, proxy, and extraction tests are
+pure-Python and always run.
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ import pytest
 from umbra import engine, identity, proxy, extract
 
 
-HAVE_OBSCURA = bool(shutil.which(os.environ.get("OBSCURA_BIN", "obscura")))
+HAVE_ENGINE = bool(shutil.which(os.environ.get("UMBRA_ENGINE_BIN", "umbra-engine")))
 
 
 # ---- identity --------------------------------------------------------------
@@ -101,22 +100,22 @@ def test_extract_offline_missing_field():
     assert out["title"] is None
 
 
-# ---- engine (requires obscura) --------------------------------------------
-@pytest.mark.skipif(not HAVE_OBSCURA, reason="obscura binary not installed")
+# ---- engine (requires the Umbra engine) -----------------------------------
+@pytest.mark.skipif(not HAVE_ENGINE, reason="umbra-engine binary not installed")
 def test_engine_fetch_markdown():
     eng = engine.Engine()
     out = eng.fetch("https://example.com", dump="markdown")
     assert "Example Domain" in out
 
 
-@pytest.mark.skipif(not HAVE_OBSCURA, reason="obscura binary not installed")
+@pytest.mark.skipif(not HAVE_ENGINE, reason="umbra-engine binary not installed")
 def test_engine_fetch_eval():
     eng = engine.Engine()
     out = eng.fetch("https://example.com", eval_js="document.title")
     assert "Example Domain" in out
 
 
-@pytest.mark.skipif(not HAVE_OBSCURA, reason="obscura binary not installed")
+@pytest.mark.skipif(not HAVE_ENGINE, reason="umbra-engine binary not installed")
 def test_engine_serve_endpoint():
     eng = engine.Engine()
     ep = eng.start()

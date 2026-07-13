@@ -3,7 +3,7 @@
 An identity is a consistent fingerprint bundle: UA, platform, viewport,
 timezone, locale, and a color/contrast/media preference set. The same seed
 always yields the same identity, so a given persona looks identical across
-sessions — which is what real anti-detection needs (Obscura randomizes per
+sessions — which is what real anti-detection needs (the Umbra engine randomizes per
 session; Umbra makes that randomization *persistent and repeatable*).
 
 We expose the identity as an override payload a caller can inject via

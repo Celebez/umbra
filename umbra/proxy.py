@@ -1,6 +1,6 @@
 """Proxy mesh: a pool of upstream proxies with rotation and health checks.
 
-Umbra routes Obscura's ``--proxy`` flag through this layer. Two modes:
+Umbra routes the Umbra engine's ``--proxy`` flag through this layer. Two modes:
 
   * ``round_robin`` — every request takes the next healthy proxy.
   * ``sticky``      — a session/key is pinned to one proxy until it fails.

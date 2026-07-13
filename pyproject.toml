@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "umbra"
 version = "0.1.0"
-description = "Umbra — the shadow engine. An AI-native stealth browser for agents: persistent identities, proxy mesh, and LLM-grounded extraction on top of the Obscura CDP core."
+description = "Umbra — the shadow engine. An AI-native stealth browser for agents: persistent identities, a proxy mesh, and LLM-grounded extraction over a CDP browser engine."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Celebez Research", email = "89258681+Celebez@users.noreply.github.com" }]
-keywords = ["browser", "stealth", "scraping", "ai-agents", "cdp", "obscura", "web-automation"]
+keywords = ["browser", "stealth", "scraping", "ai-agents", "cdp", "web-automation", "umbra"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",

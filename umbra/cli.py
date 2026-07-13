@@ -2,10 +2,10 @@
 
 Subcommands:
 
-  fetch        render one URL (markdown/html/json eval) — Obscura + optional identity
+  fetch        render one URL (markdown/html/json eval) — Umbra engine + optional identity
   scrape       parallel render of many URLs
   identities   manage persistent fingerprint personas
-  serve        start the Obscura CDP server (handy for Playwright/Puppeteer)
+  serve        start the Umbra engine CDP server (handy for Playwright/Puppeteer)
   mcp          expose Umbra as an MCP server (stdio) — drop-in for agent clients
 
 Examples
@@ -45,7 +45,7 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
             # When an identity is requested we route through a served session so
             # the fingerprint script runs on every new document.
             eng.start()
-            # best-effort: Obscura fetch can't inject CDP scripts, so we emit a
+            # best-effort: the Umbra engine fetch can't inject CDP scripts, so we emit a
             # note and rely on UA override where supported by the binary.
             out = eng.fetch(
                 args.url, dump=dump, eval_js=eval_js,
@@ -227,7 +227,7 @@ def build_parser() -> argparse.ArgumentParser:
     pi.add_argument("--proxy", default=None, help="proxy URL to bind an identity to")
     pi.set_defaults(func=_cmd_identities)
 
-    pv = sub.add_parser("serve", help="start Obscura CDP server")
+    pv = sub.add_parser("serve", help="start Umbra engine CDP server")
     pv.add_argument("--port", type=int, default=9222)
     pv.add_argument("--stealth", action="store_true")
     pv.add_argument("--proxy", default=None)

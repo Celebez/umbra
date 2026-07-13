@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
-# Build stage: install Umbra + the Obscura engine in one image.
+# Build stage: install Umbra + the Umbra engine in one image.
 FROM python:3.11-slim AS build
 
-# Install the Obscura Rust headless browser (CDP core).
-ARG OBSCURA_VERSION=v0.1.10
+# Install the Umbra engine (Rust + V8 CDP browser).
+ARG UMBRA_ENGINE_VERSION=latest
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
-    && curl -fsSL "https://github.com/h4ckf0r0day/obscura/releases/download/${OBSCURA_VERSION}/obscura-x86_64-linux.tar.gz" -o /tmp/obscura.tar.gz \
-    && tar xzf /tmp/obscura.tar.gz -C /usr/local/bin \
-    && chmod +x /usr/local/bin/obscura /usr/local/bin/obscura-worker \
-    && rm -f /tmp/obscura.tar.gz \
+    && curl -fsSL "https://github.com/Celebez/umbra/releases/${UMBRA_ENGINE_VERSION}/download/umbra-engine-x86_64-linux.tar.gz" -o /tmp/umbra-engine.tar.gz \
+    && tar xzf /tmp/umbra-engine.tar.gz -C /usr/local/bin \
+    && chmod +x /usr/local/bin/umbra-engine \
+    && rm -f /tmp/umbra-engine.tar.gz \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -20,8 +20,7 @@ RUN pip install --no-cache-dir .
 FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=build /usr/local/bin/obscura /usr/local/bin/obscura
-COPY --from=build /usr/local/bin/obscura-worker /usr/local/bin/obscura-worker
+COPY --from=build /usr/local/bin/umbra-engine /usr/local/bin/umbra-engine
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=build /app /app
 ENV PATH="/app/.venv/bin:$PATH"

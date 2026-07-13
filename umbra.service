@@ -6,8 +6,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-# Path to the obscura binary (the engine core) and the umbra venv/python.
-Environment=OBSCURA_BIN=/usr/local/bin/obscura
+# Path to the Umbra engine binary (the engine core) and the umbra venv/python.
+Environment=UMBRA_ENGINE_BIN=/usr/local/bin/umbra-engine
 Environment=PATH=/opt/umbra/.venv/bin:/usr/local/bin:/usr/bin:/bin
 WorkingDirectory=/opt/umbra
 # Long-lived CDP endpoint on 0.0.0.0:9222 (lock this down with a firewall /

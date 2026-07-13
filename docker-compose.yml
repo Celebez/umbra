@@ -7,8 +7,8 @@
 #        docker compose run --rm umbra fetch https://example.com --stealth
 #
 # Env:
-#   OBSCURA_BIN   path to the obscura binary inside the image (default: on PATH)
-#   UMBRA_LLM_*   optional, enable AI extraction
+#   UMBRA_ENGINE_BIN   path to the umbra-engine binary inside the image (default: on PATH)
+#   UMBRA_LLM_*        optional, enable AI extraction
 
 services:
   umbra-cdp:
@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     # Optional egress proxy — pair with a bound identity for consistent exits.
     # environment:
-    #   - OBSCURA_PROXY=socks5://user:pass@proxy:1080
+    #   - UMBRA_PROXY=socks5://user:pass@proxy:1080
 
   umbra-fetch:
     build: .

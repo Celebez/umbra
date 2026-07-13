@@ -5,12 +5,11 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-FFD166?style=flat-square)](LICENSE)
 
 > An AI-native stealth browser for agents. Persistent identities, a proxy mesh,
-> and LLM-grounded extraction — built on top of the [Obscura](https://github.com/h4ckf0r0day/obscura) CDP core.
+> and LLM-grounded extraction — over a CDP browser engine.
 
-Obscura gives you a lightweight, Rust, anti-detect headless browser that speaks
-the Chrome DevTools Protocol. **Umbra** layers three things Obscura does not
-ship with, so it can grow into a serious agent platform rather than just a
-scraper:
+Umbra is a lightweight, anti-detect headless browser that speaks the Chrome
+DevTools Protocol, with three layers baked in so it can grow into a real agent
+platform instead of just a scraper:
 
 | Layer | What Umbra adds | Why it matters |
 |-------|------------------|----------------|
@@ -18,9 +17,8 @@ scraper:
 | 🕸️ **Proxy mesh** | Pool of upstreams, round-robin / sticky rotation, quarantine + health re-check, residential preference. | One dead proxy should never break a scrape; identities should ride stable egress. |
 | 🧠 **Extraction** | LLM-grounded structured extraction (OpenAI-compatible API), offline rule-based fallback. | Describe the shape you want; get JSON. No brittle per-site selectors. |
 
-Zero third-party runtime dependencies — Umbra shells out to the `obscura`
-binary exactly like the official Hermes plugin, and adds the layers in pure
-Python stdlib.
+Zero third-party runtime dependencies — Umbra drives the bundled `umbra-engine`
+binary (a Rust + V8 CDP browser) and adds the layers in pure Python stdlib.
 
 ---
 
@@ -33,17 +31,18 @@ git clone https://github.com/Celebez/umbra && cd umbra
 pip install -e ".[test]"
 ```
 
-Umbra needs the `obscura` binary on `PATH` (or set `OBSCURA_BIN`):
+Umbra needs the `umbra-engine` binary on `PATH` (or set `UMBRA_ENGINE_BIN`):
 
 ```bash
-curl -LO https://github.com/h4ckf0r0day/obscura/releases/latest/download/obscura-x86_64-linux.tar.gz
-tar xzf obscura-x86_64-linux.tar.gz && sudo install obscura /usr/local/bin/
+# The engine ships as part of the Umbra image; on a host, install it once:
+curl -LO https://github.com/Celebez/umbra/releases/latest/download/umbra-engine-x86_64-linux.tar.gz
+tar xzf umbra-engine-x86_64-linux.tar.gz && sudo install umbra-engine /usr/local/bin/
 ```
 
 ## Quick start
 
 ```bash
-# Render a page as markdown (goes through Obscura, stealth on by default)
+# Render a page as markdown (goes through the Umbra engine, stealth on by default)
 umbra fetch https://example.com --stealth
 
 # Extract structured data with an LLM (set UMBRA_LLM_BASE_URL + UMBRA_LLM_MODEL)
@@ -71,18 +70,18 @@ umbra mcp
 │  personas     │  mesh + rotation  │  LLM-grounded → JSON      │
 ├───────────────┴───────────────────┴──────────────────────────┤
 │                       engine.py                               │
-│        wraps `obscura serve` / `obscura fetch` (CDP)          │
+│        wraps `umbra-engine serve` / `umbra-engine fetch` (CDP) │
 └───────────────────────────┬───────────────────────────────────┘
                             │ Chrome DevTools Protocol
                     ┌───────▼────────┐
-                    │   Obscura      │  Rust, V8, ~30 MB RAM
+                    │  umbra-engine  │  Rust, V8, ~30 MB RAM
                     │  (stealth)     │
                     └────────────────┘
 ```
 
 Every component is a small, swapable module:
 
-- `umbra.engine` — spawn/drive `obscura` (fetch, scrape, serve, CDP endpoint).
+- `umbra.engine` — spawn/drive `umbra-engine` (fetch, scrape, serve, CDP endpoint).
 - `umbra.identity` — `Identity` (deterministic from seed) + `IdentityStore` (JSON on disk).
 - `umbra.proxy` — `ProxyMesh` (round-robin / sticky, quarantine, residential bias).
 - `umbra.extract` — `extract(markdown, schema, cfg)` with offline fallback.
@@ -113,7 +112,7 @@ the `deploy` workflow — `docker run ghcr.io/celebez/umbra serve --port 9222`.
 
 | Var | Meaning |
 |-----|---------|
-| `OBSCURA_BIN` | Path to the `obscura` binary. |
+| `UMBRA_ENGINE_BIN` | Path to the `umbra-engine` binary. |
 | `UMBRA_LLM_BASE_URL` | OpenAI-compatible chat-completions base URL (enables AI extraction). |
 | `UMBRA_LLM_API_KEY` | API key for that endpoint. |
 | `UMBRA_LLM_MODEL` | Model name. |
@@ -129,4 +128,4 @@ the `deploy` workflow — `docker run ghcr.io/celebez/umbra serve --port 9222`.
 
 ## License
 
-Apache-2.0 — same as [Obscura](https://github.com/h4ckf0r0day/obscura).
+Apache-2.0.

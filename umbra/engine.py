@@ -1,8 +1,8 @@
-"""Engine layer: drive the Obscura binary (fetch / serve) over CLI + CDP.
+"""Engine layer: drive the Umbra engine binary (fetch / serve) over CLI + CDP.
 
-No third-party runtime dependency — we shell out to the ``obscura`` binary
-exactly the way the official Hermes plugin does, and additionally expose the
-CDP endpoint it serves for callers that want to drive it with Playwright /
+No third-party runtime dependency — we shell out to the ``umbra-engine``
+binary exactly the way the official Hermes plugin does, and additionally expose
+the CDP endpoint it serves for callers that want to drive it with Playwright /
 Puppeteer.
 """
 
@@ -24,22 +24,21 @@ import urllib.request
 DEFAULT_STARTUP_TIMEOUT = float(os.environ.get("UMBRA_STARTUP_TIMEOUT", "15"))
 
 
-class ObscuraNotFound(RuntimeError):
-    """Raised when the obscura binary cannot be located."""
+class EngineBinaryNotFound(RuntimeError):
+    """Raised when the umbra-engine binary cannot be located."""
 
 
-def find_binary() -> str:
-    """Resolve the obscura binary from OBSCURA_BIN or PATH."""
-    candidate = os.environ.get("OBSCURA_BIN") or "obscura"
+def find_engine_binary() -> str:
+    """Resolve the umbra-engine binary from UMBRA_ENGINE_BIN or PATH."""
+    candidate = os.environ.get("UMBRA_ENGINE_BIN") or "umbra-engine"
     path = shutil.which(candidate)
     if path:
         return path
     if Path(candidate).is_absolute() and Path(candidate).exists():
         return candidate
-    raise ObscuraNotFound(
-        "obscura binary not found on PATH and OBSCURA_BIN is unset. "
-        "Install it from https://github.com/h4ckf0r0day/obscura/releases "
-        "or set OBSCURA_BIN to the binary path."
+    raise EngineBinaryNotFound(
+        "umbra-engine binary not found on PATH and UMBRA_ENGINE_BIN is unset. "
+        "Install it (see the Umbra README) or set UMBRA_ENGINE_BIN to the binary path."
     )
 
 
@@ -60,12 +59,12 @@ def _cdp_version(host: str, port: int, timeout: float) -> dict:
         except Exception as exc:  # noqa: BLE001 - poll until it answers
             last_err = exc
             time.sleep(0.25)
-    raise TimeoutError(f"obscura CDP server did not come up: {last_err}")
+    raise TimeoutError(f"umbra-engine CDP server did not come up: {last_err}")
 
 
 @dataclass
 class Engine:
-    """A handle to a running Obscura server (or a spawner for one)."""
+    """A handle to a running Umbra engine server (or a spawner for one)."""
 
     binary: str = ""
     host: str = "127.0.0.1"
@@ -78,13 +77,13 @@ class Engine:
 
     def __post_init__(self) -> None:
         if not self.binary:
-            self.binary = find_binary()
+            self.binary = find_engine_binary()
         if not self.port:
             self.port = _free_port()
 
     # -- lifecycle -----------------------------------------------------------
     def start(self) -> str:
-        """Spawn ``obscura serve`` and return its CDP websocket endpoint."""
+        """Spawn ``umbra-engine serve`` and return its CDP websocket endpoint."""
         if self._proc is not None:
             return self._endpoint or ""
         cmd = [self.binary, "serve", "--port", str(self.port)]
@@ -164,7 +163,7 @@ class Engine:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 30)
         if res.returncode != 0:
             raise RuntimeError(
-                f"obscura fetch failed ({res.returncode}): {res.stderr.strip()}"
+                f"umbra-engine fetch failed ({res.returncode}): {res.stderr.strip()}"
             )
         return (output and Path(output).read_text()) or res.stdout
 
@@ -197,6 +196,6 @@ class Engine:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
         if res.returncode != 0:
             raise RuntimeError(
-                f"obscura scrape failed ({res.returncode}): {res.stderr.strip()}"
+                f"umbra-engine scrape failed ({res.returncode}): {res.stderr.strip()}"
             )
         return res.stdout
