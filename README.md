@@ -273,4 +273,4 @@ Every component is a small, swappable module:
 
 ## License
 
-Apache-2.0.
+MIT © 2026 Celebez. See [LICENSE](LICENSE).
