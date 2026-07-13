@@ -61,8 +61,19 @@ export UMBRA_ENGINE_BIN=~/.local/bin/umbra-engine
 
 | OS | Arch | Engine asset |
 |----|------|--------------|
-| Linux | x86_64 | `umbra-engine-x86_64-linux.tar.gz` |
-| Termux (Android) | aarch64 | `umbra-engine-aarch64-termux.tar.gz` |
+| Linux | x86_64 | `umbra-engine-x86_64-linux.tar.gz` (prebuilt, via `install.sh`) |
+
+**Termux (Android):** tidak ada prebuilt binary (engine V8 gagal cross-compile
+ke `aarch64-linux-android` di CI). Build sendiri di HP:
+
+```bash
+pkg update && pkg install rust clang make
+git clone https://github.com/Celebez/umbra && cd umbra/engine
+cargo build --release --bin obscura
+install -m 0755 target/release/obscura ~/.local/bin/umbra-engine
+export UMBRA_ENGINE_BIN=~/.local/bin/umbra-engine
+pip install --user "git+https://github.com/Celebez/umbra.git"
+```
 
 ---
 

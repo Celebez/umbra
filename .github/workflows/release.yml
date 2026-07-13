@@ -3,6 +3,10 @@ name: release
 # Builds the Umbra engine binary (Rust + V8) from `engine/` in THIS repo and
 # publishes it to Celebez/umbra releases. Fully self-contained: no dependency on
 # any upstream repo at release time.
+#
+# NOTE: only Linux x86_64 is built here. Termux/Android users build the engine
+# themselves on-device (see README "Build on Termux") — the V8 engine does not
+# cross-compile cleanly for aarch64-linux-android in CI.
 on:
   push:
     tags: ["v*"]
@@ -21,8 +25,6 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             asset: umbra-engine-x86_64-linux.tar.gz
-          - target: aarch64-linux-android
-            asset: umbra-engine-aarch64-termux.tar.gz
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,23 +34,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-
-      - name: Set up Android NDK (for Termux / aarch64-linux-android)
-        if: matrix.target == 'aarch64-linux-android'
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r25b
-          add-to-path: false
-        id: ndk
-
-      - name: Configure cargo for Android target
-        if: matrix.target == 'aarch64-linux-android'
-        run: |
-          cat >> "$HOME/.cargo/config.toml" <<EOF
-          [target.aarch64-linux-android]
-          linker = "${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-clang"
-          ar = "${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
-          EOF
 
       - name: Build engine binary
         working-directory: engine
