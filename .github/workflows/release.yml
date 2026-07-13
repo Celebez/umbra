@@ -22,9 +22,6 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset: umbra-engine-x86_64-linux.tar.gz
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            asset: umbra-engine-aarch64-linux.tar.gz
           - os: macos-latest
             target: x86_64-apple-darwin
             asset: umbra-engine-x86_64-macos.tar.gz
@@ -39,9 +36,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - name: Install cross (linux aarch64)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: cargo install cross --locked
       - name: Build engine binary
         working-directory: engine
         run: |
