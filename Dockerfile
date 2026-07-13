@@ -3,7 +3,7 @@
 FROM python:3.11-slim AS build
 
 # Install the Umbra engine (Rust + V8 CDP browser).
-ARG UMBRA_ENGINE_VERSION=v0.1.0
+ARG UMBRA_ENGINE_VERSION=latest
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
     && curl -fsSL "https://github.com/Celebez/umbra/releases/${UMBRA_ENGINE_VERSION}/download/obscura-x86_64-linux.tar.gz" -o /tmp/obscura.tar.gz \
     && tar xzf /tmp/obscura.tar.gz -C /tmp \
