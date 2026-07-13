@@ -62,8 +62,7 @@ export UMBRA_ENGINE_BIN=~/.local/bin/umbra-engine
 | OS | Arch | Engine asset |
 |----|------|--------------|
 | Linux | x86_64 | `umbra-engine-x86_64-linux.tar.gz` |
-| macOS | x86_64 | `umbra-engine-x86_64-macos.tar.gz` |
-| macOS | aarch64 | `umbra-engine-aarch64-macos.tar.gz` |
+| Termux (Android) | aarch64 | `umbra-engine-aarch64-termux.tar.gz` |
 
 ---
 
