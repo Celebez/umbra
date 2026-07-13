@@ -87,6 +87,28 @@ Every component is a small, swapable module:
 - `umbra.proxy` — `ProxyMesh` (round-robin / sticky, quarantine, residential bias).
 - `umbra.extract` — `extract(markdown, schema, cfg)` with offline fallback.
 
+## Deploy
+
+Umbra ships as a CDP service. Pick one:
+
+**Docker (compose)**
+
+```bash
+docker compose up -d umbra-cdp      # long-lived CDP on :9222
+docker compose run --rm umbra fetch https://example.com --stealth   # one-off
+```
+
+**systemd (host)**
+
+```bash
+sudo install -d /opt/umbra && sudo cp -r . /opt/umbra/
+sudo install -m 644 umbra.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now umbra
+```
+
+**Container image** is published to `ghcr.io/celebez/umbra` on tags (`v*`) via
+the `deploy` workflow — `docker run ghcr.io/celebez/umbra serve --port 9222`.
+
 ## Configuration (env vars)
 
 | Var | Meaning |

@@ -1,0 +1,32 @@
+# Umbra — shadow engine, deployed as a CDP service.
+#
+# Two ways to run:
+#   1. As a long-lived CDP server (Playwright/Puppeteer/agent clients connect):
+#        docker compose up -d umbra-cdp
+#   2. One-off fetch via the CLI:
+#        docker compose run --rm umbra fetch https://example.com --stealth
+#
+# Env:
+#   OBSCURA_BIN   path to the obscura binary inside the image (default: on PATH)
+#   UMBRA_LLM_*   optional, enable AI extraction
+
+services:
+  umbra-cdp:
+    build: .
+    image: celebez/umbra:latest
+    container_name: umbra-cdp
+    command: ["serve", "--port", "9222", "--stealth"]
+    ports:
+      - "9222:9222"
+    restart: unless-stopped
+    # Optional egress proxy — pair with a bound identity for consistent exits.
+    # environment:
+    #   - OBSCURA_PROXY=socks5://user:pass@proxy:1080
+
+  umbra-fetch:
+    build: .
+    image: celebez/umbra:latest
+    container_name: umbra-fetch
+    # override the command per run: docker compose run --rm umbra-fetch fetch <url>
+    profiles: ["cli"]
+    restart: "no"
