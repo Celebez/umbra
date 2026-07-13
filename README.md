@@ -52,8 +52,8 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[test]"
 
 # the CDP engine core (download once), then tell Umbra where it is:
-curl -fsSL https://github.com/h4ckf0r0day/obscura/releases/latest/download/obscura-x86_64-linux.tar.gz -o e.tar.gz
-tar xzf e.tar.gz && install obscura ~/.local/bin/umbra-engine
+curl -fsSL https://github.com/Celebez/umbra/releases/latest/download/umbra-engine-x86_64-linux.tar.gz -o e.tar.gz
+tar xzf e.tar.gz && install umbra-engine ~/.local/bin/umbra-engine
 export UMBRA_ENGINE_BIN=~/.local/bin/umbra-engine
 ```
 
@@ -61,11 +61,11 @@ export UMBRA_ENGINE_BIN=~/.local/bin/umbra-engine
 
 | OS | Arch | Engine asset |
 |----|------|--------------|
-| Linux | x86_64 | `obscura-x86_64-linux.tar.gz` |
-| Linux | aarch64 | `obscura-aarch64-linux.tar.gz` |
-| macOS | x86_64 | `obscura-x86_64-macos.tar.gz` |
-| macOS | aarch64 | `obscura-aarch64-macos.tar.gz` |
-| Windows | x86_64 | `obscura-x86_64-windows.zip` |
+| Linux | x86_64 | `umbra-engine-x86_64-linux.tar.gz` |
+| Linux | aarch64 | `umbra-engine-aarch64-linux.tar.gz` |
+| macOS | x86_64 | `umbra-engine-x86_64-macos.tar.gz` |
+| macOS | aarch64 | `umbra-engine-aarch64-macos.tar.gz` |
+| Windows | x86_64 | `umbra-engine-x86_64-windows.zip` |
 
 ---
 

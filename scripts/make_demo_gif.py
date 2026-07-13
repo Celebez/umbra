@@ -22,7 +22,7 @@ GOLD = (255, 209, 102)
 SCENES = [
     ("$ pip install umbra", []),
     ("$ curl -fsSL https://raw.githubusercontent.com/Celebez/umbra/main/install.sh | bash",
-     ["[umbra] engine: h4ckf0r0day/obscura @ v0.1.10 (obscura-x86_64-linux.tar.gz)",
+     ["[umbra] engine: Celebez/umbra @ v0.1.0 (umbra-engine-x86_64-linux.tar.gz)",
       "[umbra] engine installed: ~/.local/bin/umbra-engine",
       "[umbra] installing python package...",
       "[umbra] done. Usage (local loopback, not public):",

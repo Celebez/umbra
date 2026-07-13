@@ -26,7 +26,7 @@ case "$ARCH" in
   arm64|aarch64) ARCH_PART="aarch64" ;;
   *) err "unsupported arch: $ARCH" ;;
 esac
-ASSET="obscura-${ARCH_PART}-${OS_PART}.tar.gz"
+ASSET="umbra-engine-${ARCH_PART}-${OS_PART}.tar.gz"
 
 # The engine binary is published to Celebez/umbra releases by this repo's own
 # release workflow (built from engine/ in this repo).
@@ -44,10 +44,9 @@ curl -fSL "$URL" -o "$TMP/$ASSET"
 tar xzf "$TMP/$ASSET" -C "$TMP"
 
 mkdir -p "$INSTALL_DIR"
-install -m 0755 "$TMP/obscura" "$INSTALL_DIR/umbra-engine" 2>/dev/null \
-  || sudo install -m 0755 "$TMP/obscura" "$INSTALL_DIR/umbra-engine" \
+install -m 0755 "$TMP/umbra-engine" "$INSTALL_DIR/umbra-engine" 2>/dev/null \
+  || sudo install -m 0755 "$TMP/umbra-engine" "$INSTALL_DIR/umbra-engine" \
   || err "could not write to $INSTALL_DIR"
-ln -sf "$INSTALL_DIR/umbra-engine" "$INSTALL_DIR/obscura" 2>/dev/null || true
 echo "[umbra] engine installed: $INSTALL_DIR/umbra-engine"
 
 echo "[umbra] installing python package..."
