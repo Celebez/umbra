@@ -7,9 +7,16 @@
 > An AI-native stealth browser for agents. Persistent identities, a proxy mesh,
 > and LLM-grounded extraction — over a CDP browser engine.
 
+![Umbra hero](assets/hero.png)
+
 Umbra is a lightweight, anti-detect headless browser that speaks the Chrome
-DevTools Protocol, with three layers baked in so it can grow into a real agent
-platform instead of just a scraper:
+DevTools Protocol. Everything **runs locally on your machine** — there is no
+central server, no account, and no callback to anyone's infrastructure. You
+install it, you run it.
+
+![Umbra demo](assets/demo.gif)
+
+## Why Umbra
 
 | Layer | What Umbra adds | Why it matters |
 |-------|------------------|----------------|
@@ -20,53 +27,209 @@ platform instead of just a scraper:
 Zero third-party runtime dependencies — Umbra drives the bundled `umbra-engine`
 binary (a Rust + V8 CDP browser) and adds the layers in pure Python stdlib.
 
+> **Privacy / network note:** Umbra binds **127.0.0.1 only**. The `serve`
+> command, `docker-compose.yml`, and the systemd unit all default to loopback
+> (`127.0.0.1:9222`). It never opens a port on a public IP. To expose it on a
+> LAN you must deliberately change the bind address.
+
 ---
 
-## Install
+## 📦 Install
 
-One-liner (installs the engine binary + the `umbra` package, no public exposure):
+### Option A — one-liner (recommended)
+
+Installs the engine binary (`umbra-engine`) + the `umbra` package. Local only.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Celebez/umbra/main/install.sh | bash
 ```
 
-Or manually:
+### Option B — from source
 
 ```bash
 git clone https://github.com/Celebez/umbra && cd umbra
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[test]"
-# engine binary (the CDP core) — download once:
+
+# the CDP engine core (download once), then tell Umbra where it is:
 curl -fsSL https://github.com/h4ckf0r0day/obscura/releases/latest/download/obscura-x86_64-linux.tar.gz -o e.tar.gz
 tar xzf e.tar.gz && install obscura ~/.local/bin/umbra-engine
+export UMBRA_ENGINE_BIN=~/.local/bin/umbra-engine
 ```
 
-> **Network binding:** Umbra binds **127.0.0.1 only** — it is never exposed on a
-> public IP/port. The `serve` command, `docker-compose.yml`, and the systemd
-> unit all default to loopback (`127.0.0.1:9222`). To expose it on a LAN you
-> must deliberately change the bind address; do not do this by default.
+### Supported platforms
 
-## Quick start
+| OS | Arch | Engine asset |
+|----|------|--------------|
+| Linux | x86_64 | `obscura-x86_64-linux.tar.gz` |
+| Linux | aarch64 | `obscura-aarch64-linux.tar.gz` |
+| macOS | x86_64 | `obscura-x86_64-macos.tar.gz` |
+| macOS | aarch64 | `obscura-aarch64-macos.tar.gz` |
+| Windows | x86_64 | `obscura-x86_64-windows.zip` |
+
+---
+
+## 🚀 Quick start
 
 ```bash
-# Render a page as markdown (goes through the Umbra engine, stealth on by default)
+# 1. Render a page as markdown (stealth on by default)
 umbra fetch https://example.com --stealth
 
-# Extract structured data with an LLM (set UMBRA_LLM_BASE_URL + UMBRA_LLM_MODEL)
-umbra fetch https://shop.example/p/42 \
-  --extract '{"title": "product name", "price": "price in USD"}'
+# 2. Choose the output shape
+umbra fetch https://example.com --dump text
+umbra fetch https://example.com --dump html
+umbra fetch https://example.com --dump links
+umbra fetch https://example.com --dump assets
 
-# Mint and reuse a persistent identity
+# 3. Run JavaScript in the page context
+umbra fetch https://example.com --eval "document.title"
+
+# 4. Wait for a selector / load state
+umbra fetch https://example.com --wait-until networkidle0 --selector "main"
+
+# 5. Mint and reuse a persistent identity
 umbra identities new --name acme
 umbra fetch https://example.com --identity acme
 
-# Parallel scrape through a proxy mesh
+# 6. Parallel scrape through a proxy mesh
 umbra scrape url1 url2 url3 --concurrency 25 --proxy socks5://127.0.0.1:1080
 
-# Expose Umbra to an agent as an MCP server (stdio)
+# 7. Expose Umbra to an agent as an MCP server (stdio)
 umbra mcp
 ```
 
-## Architecture
+---
+
+## 🪪 Identities (personas)
+
+A persona is deterministic from a seed — same seed, same fingerprint, every run.
+
+```bash
+# create (random seed)
+umbra identities new --name acme
+
+# create with a fixed seed (reproducible fingerprint)
+umbra identities new --seed 1ea98808b65db550 --name acme
+
+# list stored identities
+umbra identities list
+
+# inspect one
+umbra identities get --name acme
+
+# export the browser-fingerprint CDP bootstrap script
+umbra identities script --seed 1ea98808b65db550
+
+# bind a persona to a residential egress proxy (anti-correlation)
+umbra identities bind --seed 1ea98808b65db550 --proxy socks5://user:pass@proxy:1080
+
+# unbind
+umbra identities unbind --seed 1ea98808b65db550
+```
+
+Stored as JSON in `~/.config/umbra/identities.json` (override with
+`UMBRA_IDENTITIES_PATH`).
+
+---
+
+## 🧠 Extraction (LLM-grounded)
+
+Set your OpenAI-compatible endpoint once, then ask for structured JSON:
+
+```bash
+export UMBRA_LLM_BASE_URL=https://api.openai.com/v1
+export UMBRA_LLM_API_KEY=sk-...
+export UMBRA_LLM_MODEL=gpt-4o-mini
+
+umbra fetch https://shop.example/p/42 \
+  --extract '{"title": "product name", "price": "price in USD", "in_stock": "boolean"}'
+```
+
+No API key? `--extract` falls back to a deterministic offline rule pass that
+returns whatever the page clearly contains.
+
+---
+
+## 🖥️ Serve (CDP endpoint for Playwright / Puppeteer)
+
+```bash
+umbra serve --port 9222 --stealth
+# binds 127.0.0.1:9222 (local only)
+```
+
+Then point Playwright/Puppeteer at `http://127.0.0.1:9222`:
+
+```python
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    b = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    page = b.new_page()
+    page.goto("https://example.com")
+```
+
+---
+
+## 🧩 CLI reference
+
+```
+umbra fetch <url> [--dump html|text|links|markdown|assets|original]
+                 [--eval JS] [--wait-until STATE] [--selector SEL]
+                 [--timeout S] [--stealth] [--proxy URL]
+                 [--identity NAME] [--extract JSON]
+
+umbra scrape <url...> [--concurrency N] [--eval JS] [--format json|text]
+                      [--quiet] [--stealth] [--proxy URL]
+
+umbra identities {list|new|get|script|bind|unbind}
+                 [--seed S] [--name N] [--proxy URL]
+
+umbra serve [--port 9222] [--stealth] [--proxy URL]
+umbra mcp
+```
+
+Global flags: `--stealth`, `--proxy`, `--identity` are accepted before or after
+the subcommand and apply to `fetch`, `scrape`, `serve`, and `mcp`.
+
+---
+
+## 🐳 Deploy (optional — self-host on your own box)
+
+All bindings default to loopback. Nothing is exposed publicly.
+
+**Docker Compose**
+
+```bash
+docker compose up -d umbra-cdp      # long-lived CDP on 127.0.0.1:9222
+docker compose run --rm umbra fetch https://example.com --stealth   # one-off
+```
+
+**systemd (host)**
+
+```bash
+sudo install -d /opt/umbra && sudo cp -r . /opt/umbra/
+sudo install -m 644 umbra.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now umbra
+```
+
+**Container image** is published to `ghcr.io/celebez/umbra` on tags (`v*`) via
+the `deploy` workflow — `docker run ghcr.io/celebez/umbra serve --port 9222`.
+
+---
+
+## ⚙️ Configuration (env vars)
+
+| Var | Meaning |
+|-----|---------|
+| `UMBRA_ENGINE_BIN` | Path to the `umbra-engine` binary. |
+| `UMBRA_IDENTITIES_PATH` | Where persona JSON is stored (default `~/.config/umbra/identities.json`). |
+| `UMBRA_LLM_BASE_URL` | OpenAI-compatible chat-completions base URL (enables AI extraction). |
+| `UMBRA_LLM_API_KEY` | API key for that endpoint. |
+| `UMBRA_LLM_MODEL` | Model name. |
+| `UMBRA_STARTUP_TIMEOUT` | Seconds to wait for the CDP server (default 15). |
+
+---
+
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -85,44 +248,12 @@ umbra mcp
                     └────────────────┘
 ```
 
-Every component is a small, swapable module:
+Every component is a small, swappable module:
 
 - `umbra.engine` — spawn/drive `umbra-engine` (fetch, scrape, serve, CDP endpoint).
 - `umbra.identity` — `Identity` (deterministic from seed) + `IdentityStore` (JSON on disk).
 - `umbra.proxy` — `ProxyMesh` (round-robin / sticky, quarantine, residential bias).
 - `umbra.extract` — `extract(markdown, schema, cfg)` with offline fallback.
-
-## Deploy
-
-Umbra ships as a CDP service. Pick one:
-
-**Docker (compose)**
-
-```bash
-docker compose up -d umbra-cdp      # long-lived CDP on :9222
-docker compose run --rm umbra fetch https://example.com --stealth   # one-off
-```
-
-**systemd (host)**
-
-```bash
-sudo install -d /opt/umbra && sudo cp -r . /opt/umbra/
-sudo install -m 644 umbra.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now umbra
-```
-
-**Container image** is published to `ghcr.io/celebez/umbra` on tags (`v*`) via
-the `deploy` workflow — `docker run ghcr.io/celebez/umbra serve --port 9222`.
-
-## Configuration (env vars)
-
-| Var | Meaning |
-|-----|---------|
-| `UMBRA_ENGINE_BIN` | Path to the `umbra-engine` binary. |
-| `UMBRA_LLM_BASE_URL` | OpenAI-compatible chat-completions base URL (enables AI extraction). |
-| `UMBRA_LLM_API_KEY` | API key for that endpoint. |
-| `UMBRA_LLM_MODEL` | Model name. |
-| `UMBRA_STARTUP_TIMEOUT` | Seconds to wait for the CDP server (default 15). |
 
 ## Roadmap (where it grows)
 
