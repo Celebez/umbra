@@ -16,8 +16,9 @@ services:
     image: celebez/umbra:latest
     container_name: umbra-cdp
     command: ["serve", "--port", "9222", "--stealth"]
+    # Loopback only. Nothing is exposed on a public IP/port.
     ports:
-      - "9222:9222"
+      - "127.0.0.1:9222:9222"
     restart: unless-stopped
     # Optional egress proxy — pair with a bound identity for consistent exits.
     # environment:

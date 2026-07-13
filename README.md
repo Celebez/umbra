@@ -24,20 +24,26 @@ binary (a Rust + V8 CDP browser) and adds the layers in pure Python stdlib.
 
 ## Install
 
+One-liner (installs the engine binary + the `umbra` package, no public exposure):
+
 ```bash
-pip install umbra
-# or, from source:
+curl -fsSL https://raw.githubusercontent.com/Celebez/umbra/main/install.sh | bash
+```
+
+Or manually:
+
+```bash
 git clone https://github.com/Celebez/umbra && cd umbra
 pip install -e ".[test]"
+# engine binary (the CDP core) — download once:
+curl -fsSL https://github.com/h4ckf0r0day/obscura/releases/latest/download/obscura-x86_64-linux.tar.gz -o e.tar.gz
+tar xzf e.tar.gz && install obscura ~/.local/bin/umbra-engine
 ```
 
-Umbra needs the `umbra-engine` binary on `PATH` (or set `UMBRA_ENGINE_BIN`):
-
-```bash
-# The engine ships as part of the Umbra image; on a host, install it once:
-curl -LO https://github.com/Celebez/umbra/releases/latest/download/umbra-engine-x86_64-linux.tar.gz
-tar xzf umbra-engine-x86_64-linux.tar.gz && sudo install umbra-engine /usr/local/bin/
-```
+> **Network binding:** Umbra binds **127.0.0.1 only** — it is never exposed on a
+> public IP/port. The `serve` command, `docker-compose.yml`, and the systemd
+> unit all default to loopback (`127.0.0.1:9222`). To expose it on a LAN you
+> must deliberately change the bind address; do not do this by default.
 
 ## Quick start
 

@@ -109,7 +109,11 @@ def _cmd_identities(args: argparse.Namespace) -> int:
 def _cmd_serve(args: argparse.Namespace) -> int:
     eng = engine.Engine(stealth=args.stealth, proxy=args.proxy, port=args.port)
     ep = eng.start()
-    sys.stderr.write(f"[umbra] CDP endpoint: {ep}\n[umbra] press Ctrl-C to stop\n")
+    sys.stderr.write(
+        f"[umbra] CDP endpoint: {ep}\n"
+        f"[umbra] bound to 127.0.0.1:{args.port} (local only, not public)\n"
+        f"[umbra] press Ctrl-C to stop\n"
+    )
     try:
         import time
         while True:

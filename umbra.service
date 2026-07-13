@@ -10,8 +10,7 @@ Type=simple
 Environment=UMBRA_ENGINE_BIN=/usr/local/bin/umbra-engine
 Environment=PATH=/opt/umbra/.venv/bin:/usr/local/bin:/usr/bin:/bin
 WorkingDirectory=/opt/umbra
-# Long-lived CDP endpoint on 0.0.0.0:9222 (lock this down with a firewall /
-# reverse proxy — the binary binds loopback by default, override for LAN use).
+# Binds 127.0.0.1:9222 (loopback only — NOT exposed on a public IP/port).
 ExecStart=/opt/umbra/.venv/bin/umbra serve --port 9222 --stealth
 Restart=on-failure
 RestartSec=3
