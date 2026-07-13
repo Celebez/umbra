@@ -95,7 +95,7 @@ Every component is a small, swapable module:
 
 ## Roadmap (where it grows)
 
-- [ ] **Identity ↔ proxy binding** — pin a persona to a residential egress IP.
+- [x] **Identity ↔ proxy binding** — pin a persona to a residential egress IP (persisted).
 - [ ] **Self-evolving personas** — drift fingerprints within plausible envelopes to dodge ML bot-detection.
 - [ ] **Captcha solver hook** — pluggable solver backend behind the extraction layer.
 - [ ] **Session recorder/replay** — persist a full CDP session and replay it.

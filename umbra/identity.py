@@ -44,6 +44,7 @@ class Identity:
     timezone: str = ""
     locale: str = ""
     user_agent: str = ""
+    proxy: str = ""  # bound egress proxy (empty = unbound / any)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -139,3 +140,21 @@ class IdentityStore:
         """Mint a fresh identity from a random seed."""
         seed = hashlib.sha256(str(random.random()).encode()).hexdigest()[:16]
         return self.get(seed, name or f"anon-{seed[:6]}")
+
+    def bind_proxy(self, seed: str, proxy_url: str, name: str = "") -> Identity:
+        """Pin an identity to a specific egress proxy (persisted).
+
+        A bound identity should always route its traffic through the same
+        proxy so the persona's network egress stays consistent — a key
+        anti-correlation signal that naive bots leak.
+        """
+        ident = self.get(seed, name)
+        ident.proxy = proxy_url
+        self._save()
+        return ident
+
+    def unbind_proxy(self, seed: str, name: str = "") -> Identity:
+        ident = self.get(seed, name)
+        ident.proxy = ""
+        self._save()
+        return ident

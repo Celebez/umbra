@@ -50,9 +50,9 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
             out = eng.fetch(
                 args.url, dump=dump, eval_js=eval_js,
                 wait_until=args.wait_until, timeout=args.timeout,
-                selector=args.selector,
+                selector=args.selector, proxy=ident.proxy or None,
             )
-        sys.stderr.write(f"[umbra] identity={ident.name} ua={ident.user_agent}\n")
+        sys.stderr.write(f"[umbra] identity={ident.name} ua={ident.user_agent} proxy={ident.proxy or 'any'}\n")
     else:
         out = eng.fetch(
             args.url, dump=dump, eval_js=eval_js,
@@ -94,6 +94,15 @@ def _cmd_identities(args: argparse.Namespace) -> int:
     elif args.ident_action == "script":
         ident = store.get(args.seed)
         sys.stdout.write(ident.cdp_script())
+    elif args.ident_action == "bind":
+        if not args.proxy:
+            sys.stderr.write("[umbra] --proxy <url> required for bind\n")
+            return 2
+        ident = store.bind_proxy(args.seed, args.proxy, name=args.name or "")
+        print(json.dumps(ident.to_dict(), ensure_ascii=False))
+    elif args.ident_action == "unbind":
+        ident = store.unbind_proxy(args.seed, name=args.name or "")
+        print(json.dumps(ident.to_dict(), ensure_ascii=False))
     return 0
 
 
@@ -212,9 +221,10 @@ def build_parser() -> argparse.ArgumentParser:
     ps.set_defaults(func=_cmd_scrape)
 
     pi = sub.add_parser("identities", help="manage personas")
-    pi.add_argument("ident_action", choices=["list", "new", "get", "script"])
+    pi.add_argument("ident_action", choices=["list", "new", "get", "script", "bind", "unbind"])
     pi.add_argument("--seed", default=None)
     pi.add_argument("--name", default=None)
+    pi.add_argument("--proxy", default=None, help="proxy URL to bind an identity to")
     pi.set_defaults(func=_cmd_identities)
 
     pv = sub.add_parser("serve", help="start Obscura CDP server")

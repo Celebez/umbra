@@ -42,6 +42,17 @@ def test_identity_store_persists(tmp_path):
     assert any(i.seed == ident.seed for i in reopened.list())
 
 
+def test_identity_proxy_binding(tmp_path):
+    store = identity.IdentityStore(path=tmp_path / "ids.json")
+    ident = store.bind_proxy("acme", "socks5://10.0.0.1:1080", name="acme")
+    assert ident.proxy == "socks5://10.0.0.1:1080"
+    reopened = identity.IdentityStore(path=tmp_path / "ids.json")
+    bound = reopened.get("acme")
+    assert bound.proxy == "socks5://10.0.0.1:1080"
+    unbound = store.unbind_proxy("acme")
+    assert unbound.proxy == ""
+
+
 def test_identity_cdp_script_is_valid_js():
     ident = identity.derive_identity("js-check")
     script = ident.cdp_script()
