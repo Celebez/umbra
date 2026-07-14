@@ -9,3 +9,12 @@ venv/
 .pytest_cache/
 .umbra/
 *.log
+
+# Secrets / credentials (never commit)
+.env
+.env.*
+*.key
+*.pem
+secrets*
+credentials*
+*.secret
