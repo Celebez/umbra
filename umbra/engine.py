@@ -80,6 +80,12 @@ class Engine:
             self.binary = find_engine_binary()
         if not self.port:
             self.port = _free_port()
+        # Resolve proxy from env if not explicitly set (keeps credentials
+        # out of CLI/identity files; set UMBRA_PROXY=user:pass@host).
+        if not self.proxy:
+            env_proxy = os.environ.get("UMBRA_PROXY")
+            if env_proxy:
+                self.proxy = env_proxy
 
     # -- lifecycle -----------------------------------------------------------
     def start(self) -> str:

@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
+import re
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Optional
@@ -83,6 +85,32 @@ class Identity:
         )
 
 
+def redact_proxy_credentials(url: str) -> str:
+    """Strip inline user:pass from a proxy URL before persisting to disk.
+
+    Credentials are never written to identities.json — they are resolved from
+    the UMBRA_PROXY_<name> environment variable at runtime instead.
+    """
+    if not url:
+        return url
+    return re.sub(r"//[^@/]+@", "//***@", url)
+
+
+def resolve_proxy(url: str, name: str = "") -> str:
+    """Resolve a proxy URL, pulling credentials from the environment if the
+    persisted form was redacted (contains '***')."""
+    if not url:
+        return url
+    if "***" not in url:
+        return url
+    env_key = "UMBRA_PROXY_" + re.sub(r"[^A-Za-z0-9]", "_", (name or "")).upper()
+    cred = os.environ.get(env_key) or os.environ.get("UMBRA_PROXY")
+    if cred:
+        # cred is 'user:pass'; splice it back into the redacted URL
+        return url.replace("//***@", f"//{cred}@", 1)
+    return url.replace("//***@", "//", 1)
+
+
 def derive_identity(seed: str, name: str = "") -> Identity:
     """Deterministically derive an Identity from a seed string."""
     h = hashlib.sha256(seed.encode()).hexdigest()
@@ -124,14 +152,21 @@ class IdentityStore:
                 pass
 
     def _save(self) -> None:
-        payload = {k: v.to_dict() for k, v in self._cache.items()}
+        payload = {}
+        for k, v in self._cache.items():
+            d = v.to_dict()
+            d["proxy"] = redact_proxy_credentials(d.get("proxy", ""))
+            payload[k] = d
         self.path.write_text(json.dumps(payload, indent=2))
 
     def get(self, seed: str, name: str = "") -> Identity:
         if seed not in self._cache:
             self._cache[seed] = derive_identity(seed, name)
             self._save()
-        return self._cache[seed]
+        ident = self._cache[seed]
+        if ident.proxy and "***" in ident.proxy:
+            ident.proxy = resolve_proxy(ident.proxy, ident.name)
+        return ident
 
     def list(self) -> list[Identity]:
         return list(self._cache.values())
